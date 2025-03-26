@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package semantic;
+
+service SemanticService{
+    rpc SearchPaper (SearchRequest) returns (PapersResponse);
+    rpc AddPaper (AddRequest) returns (ErrorResponse);
+}
+
+message SearchRequest{
+    string Input_data = 1;
+}
+
+message PaperResponse{
+    string ID = 1;
+    string Title = 2;
+    string Abstract = 3;
+    int64 Year = 4;
+    string Best_oa_location = 5;
+}
+message PapersResponse{
+    repeated PaperResponse Papers = 1;
+}
+
+message AddRequest{
+    string ID = 1;
+    string Title = 2;
+    string Abstract = 3;
+    int64 Year = 4;
+    string Best_oa_location = 5;
+    repeated Referenced_works Referenced_works = 6;
+    repeated Related_works Related_works = 7;
+}
+
+message Referenced_works{
+    string ID = 1;
+}
+
+message Related_works{
+    string ID = 1;
+}
+
+message ErrorResponse{
+    string Error = 1;
+}
