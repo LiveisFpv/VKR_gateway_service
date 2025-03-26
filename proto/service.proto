@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package semantic;
 
+option go_package = "github.com/Live/VKR_gateway_service/gen/go/semantic";
+
 service SemanticService{
     rpc SearchPaper (SearchRequest) returns (PapersResponse);
     rpc AddPaper (AddRequest) returns (ErrorResponse);
