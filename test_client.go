@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// Подключаемся к серверу
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:5104", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Ошибка подключения: %v", err)
 	}
