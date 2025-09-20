@@ -1,6 +1,10 @@
 package config
 
-import "github.com/ilyakaznacheev/cleanenv"
+import (
+	"time"
+
+	"github.com/ilyakaznacheev/cleanenv"
+)
 
 type Config struct {
 	PostgresConfig      PostgresConfig
@@ -12,6 +16,10 @@ type Config struct {
 	SwaggerEnabled      bool     `env:"SWAGGER_ENABLED" env-default:"true"`
 	SwaggerUser         string   `env:"SWAGGER_USER"`
 	SwaggerPassword     string   `env:"SWAGGER_PASSWORD"`
+	// Address of external AI gRPC service (host:port)
+	AIServiceAddress string `env:"AI_GRPC_ADDR" env-default:"localhost:5104"`
+	// Default timeout for gRPC dials/requests
+	GRPCTimeout time.Duration `env:"GRPC_TIMEOUT" env-default:"5s"`
 }
 
 type PostgresConfig struct {

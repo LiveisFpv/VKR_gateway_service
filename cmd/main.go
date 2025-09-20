@@ -1,17 +1,18 @@
 package main
 
 import (
-	"VKR_gateway_service/internal/app"
-	"VKR_gateway_service/internal/config"
-	"VKR_gateway_service/internal/repository/postgres"
-	"VKR_gateway_service/internal/transport/http"
-	"VKR_gateway_service/pkg/logger"
-	"VKR_gateway_service/pkg/storage"
-	"context"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+    "VKR_gateway_service/internal/app"
+    "VKR_gateway_service/internal/config"
+    "VKR_gateway_service/internal/repository/postgres"
+    "VKR_gateway_service/internal/transport/http"
+    rpctransport "VKR_gateway_service/internal/transport/rpc"
+    "VKR_gateway_service/pkg/logger"
+    "VKR_gateway_service/pkg/storage"
+    "context"
+    "os"
+    "os/signal"
+    "syscall"
+    "time"
 )
 
 // @title ALib API
@@ -38,11 +39,18 @@ func main() {
 		return
 	}
 
-	UserRepo := postgres.NewUserRepository(pgPool)
+    UserRepo := postgres.NewUserRepository(pgPool)
 
-	usecase := app.NewApp(cfg, UserRepo, logger)
-	// ! Init REST
-	// ! Init gRPC
+    // Init gRPC client to external AI service
+    aiClient, aiConn, err := rpctransport.NewAIClient(ctx, cfg.AIServiceAddress, cfg.GRPCTimeout)
+    if err != nil {
+        logger.Fatalf("Failed to connect to AI gRPC service: %v", err)
+        return
+    }
+    defer aiConn.Close()
+
+    usecase := app.NewApp(cfg, UserRepo, logger, aiClient)
+    // ! Init REST
 	// ! Graceful shutdown
 	server := http.NewHTTPServer(cfg, usecase)
 	logger.Info("Start HTTP server")

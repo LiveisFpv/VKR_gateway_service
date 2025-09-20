@@ -1,9 +1,127 @@
 basePath: /api
+definitions:
+  presenters.AddPaperRequest:
+    properties:
+      abstract:
+        type: string
+      best_oa_location:
+        type: string
+      id:
+        type: string
+      referenced_paper:
+        items:
+          $ref: '#/definitions/presenters.ReferencedPaper'
+        type: array
+      related_paper:
+        items:
+          $ref: '#/definitions/presenters.RelatedPaper'
+        type: array
+      title:
+        type: string
+      year:
+        type: integer
+    type: object
+  presenters.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  presenters.Paper:
+    properties:
+      abstract:
+        type: string
+      best_oa_location:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      year:
+        type: integer
+    type: object
+  presenters.ReferencedPaper:
+    properties:
+      id:
+        type: string
+    type: object
+  presenters.RelatedPaper:
+    properties:
+      id:
+        type: string
+    type: object
+  presenters.SearchPaperResponse:
+    properties:
+      papers:
+        items:
+          $ref: '#/definitions/presenters.Paper'
+        type: array
+    type: object
 host: localhost:8080
 info:
   contact: {}
   description: ALib для поиска различной научной информации
   title: ALib API
   version: "0.1"
-paths: {}
+paths:
+  /ai/paper/add:
+    post:
+      consumes:
+      - application/json
+      description: Add a paper to the index
+      parameters:
+      - description: Paper data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/presenters.AddPaperRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/presenters.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/presenters.ErrorResponse'
+      summary: Add paper
+      tags:
+      - ai
+  /ai/search/papers:
+    get:
+      consumes:
+      - application/json
+      description: Semantic search for papers
+      parameters:
+      - description: Search text
+        in: query
+        name: text
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/presenters.SearchPaperResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/presenters.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/presenters.ErrorResponse'
+      summary: Search papers
+      tags:
+      - ai
 swagger: "2.0"

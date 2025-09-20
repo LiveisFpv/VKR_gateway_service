@@ -1,0 +1,84 @@
+services:
+  core:
+    container_name: Alib-core
+    build:
+      context: .
+      dockerfile: ./dockerfile
+    ports:
+      - "${HTTP_PORT}:${HTTP_PORT}"
+    environment:
+      - DOMAIN=${DOMAIN}
+      - PUBLIC_URL=${PUBLIC_URL}
+      - ALLOWED_REDIRECT_URLS=${ALLOWED_REDIRECT_URLS}
+      - ALLOWED_CORS_ORIGINS=${ALLOWED_CORS_ORIGINS}
+
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+
+      - HTTP_PORT=${HTTP_PORT}
+      - SWAGGER_ENABLED=${SWAGGER_ENABLED}
+      - SWAGGER_USER=${SWAGGER_USER}
+      - SWAGGER_PASSWORD=${SWAGGER_PASSWORD}
+      - GRPC_TIMEOUT=${GRPC_TIMEOUT}
+      - AI_GRPC_ADDR=${AI_GRPC_ADDR}
+      
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
+    volumes:
+      - ./:/app
+    networks:
+      - grpc_network
+      - storage_network
+
+  postgres:
+    container_name: Alib_db
+    image: postgres:17
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    # ports:
+      # - "15432:${DB_PORT}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:  # Ждем, пока БД будет готова
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}"]
+      interval: 5s
+      retries: 5
+    networks:
+      - storage_network
+  
+  migrator:
+    container_name: Alib_migrator
+    build:
+      context: .
+      dockerfile: ./tools/migrator/dockerfile
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+      - DB_HOST=${DB_HOST}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - storage_network
+    
+
+volumes:
+  postgres_data:
+
+# Before start create a network with command
+# docker network create grpc_network
+networks:
+  grpc_network:
+    external: true
+  storage_network:
+    driver: bridge
