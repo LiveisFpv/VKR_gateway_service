@@ -88,6 +88,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/presenters.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/presenters.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -115,6 +119,10 @@ paths:
             $ref: '#/definitions/presenters.SearchPaperResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/presenters.ErrorResponse'
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/presenters.ErrorResponse'
         "500":

@@ -24,6 +24,7 @@ services:
       - SWAGGER_PASSWORD=${SWAGGER_PASSWORD}
       - GRPC_TIMEOUT=${GRPC_TIMEOUT}
       - AI_GRPC_ADDR=${AI_GRPC_ADDR}
+      - SSO_HTTP_URL=${SSO_HTTP_URL}
       
     depends_on:
       postgres:

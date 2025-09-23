@@ -3,6 +3,7 @@ package http
 import (
 	"VKR_gateway_service/internal/app"
 	"VKR_gateway_service/internal/config"
+	"VKR_gateway_service/internal/transport/http/middlewares"
 	"context"
 	"fmt"
 	"net/http"
@@ -27,8 +28,8 @@ func NewHTTPServer(conf *config.Config, a *app.App) *Server {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	r.Use(
-		gin.Logger(),
 		gin.Recovery(),
+		gin.Logger(),
 	)
 	httpServer := &http.Server{
 		Addr:    ":" + conf.HttpServerConfig.Port,
@@ -82,8 +83,13 @@ func NewHTTPServer(conf *config.Config, a *app.App) *Server {
 			s.app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}
 	}
-	AIRouter(s.app.Group("/api/ai/"), a)
+	// Public routers
 	SSORouter(s.app.Group("/api/sso/"), a)
+
+	// Protected routers
+	ai := s.app.Group("/api/ai/")
+	ai.Use(middlewares.AuthMiddleware(a))
+	AIRouter(ai, a)
 	return &s
 }
 

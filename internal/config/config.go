@@ -19,7 +19,8 @@ type Config struct {
 	// Address of external AI gRPC service (host:port)
 	AIServiceAddress string `env:"AI_GRPC_ADDR" env-default:"localhost:5104"`
 	// Default timeout for gRPC dials/requests
-	GRPCTimeout time.Duration `env:"GRPC_TIMEOUT" env-default:"5s"`
+	GRPCTimeout  time.Duration `env:"GRPC_TIMEOUT" env-default:"5s"`
+	SSO_HTTP_URL string        `env:"SSO_HTTP_URL"`
 }
 
 type PostgresConfig struct {

@@ -22,6 +22,7 @@ import (
 // @Param text query string true "Search text"
 // @Success 200 {object} presenters.SearchPaperResponse
 // @Failure 400 {object} presenters.ErrorResponse
+// @Failure 401 {object} presenters.ErrorResponse
 // @Failure 500 {object} presenters.ErrorResponse
 // @Router /ai/search/papers [get]
 func SearchPapers(ctx *gin.Context, a *app.App) {
@@ -73,6 +74,7 @@ func SearchPapers(ctx *gin.Context, a *app.App) {
 // @Param data body presenters.AddPaperRequest true "Paper data"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} presenters.ErrorResponse
+// @Failure 401 {object} presenters.ErrorResponse
 // @Failure 500 {object} presenters.ErrorResponse
 // @Router /ai/paper/add [post]
 func PaperAdd(ctx *gin.Context, a *app.App) {
