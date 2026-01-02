@@ -5,12 +5,97 @@ package semantic;
 option go_package = "github.com/Live/VKR_gateway_service/gen/go/semantic";
 
 service SemanticService{
+    rpc GetInstitutions (InstitutionReq) returns (InstitutionsResp);
+    rpc AddInstitution (Institution) returns (ErrorResponse);
+    rpc GetAuthors(AuthorReq) returns (AuthorsResp);
+    rpc AddAuthor(Author) returns (ErrorResponse);
+    rpc GetChatHistory(HistoryReq) returns (HistoryResp);
+    rpc CreateNewChat(Chat) returns (ChatResp);
+    rpc UpdateChat(Chat) returns (ChatResp);
+    rpc GetUserChats(UserChatsReq) returns (ChatsResp);
+    rpc GetAuthorPapers (AuthorPaperReq) returns (PapersResponse);
     rpc SearchPaper (SearchRequest) returns (PapersResponse);
     rpc AddPaper (AddRequest) returns (ErrorResponse);
 }
 
+message InstitutionReq {
+    string Query = 1;
+}
+
+message InstitutionsResp{
+    repeated Institution Institutions = 1;
+}
+
+message Institution{
+    int64 Institution_id = 1;
+    string Name = 2;
+    string Country = 3;
+    string Ror_id = 4;
+    string Grid_id = 5;
+}
+
+message AuthorReq{
+    string Query = 1;
+}
+
+message AuthorsResp{
+    repeated Author Authors = 1;
+}
+
+message Author {
+    string First_name = 1;
+    string Last_name = 2;
+    string Middle_name = 3;
+    string Orcid = 4;
+    int64 Author_id = 5;
+}
+
+message HistoryReq {
+    int64 Chat_id = 1;
+}
+
+message HistoryResp {
+    repeated ChatMessage ChatMessages = 1;
+}
+
+message ChatMessage{
+    string Search_query = 1;
+    string Created_at = 2;
+    PapersResponse papers = 3;
+}
+
+message UserChatsReq {
+    int64 User_id = 1;
+}
+
+message Chat {
+    int64 Chat_id = 1;
+    int64 User_id = 2;
+    string Updated_at = 3;
+    string Title = 4;
+}
+
+message UpdateChatReq {
+    int64 Chat_id = 1;
+    string Title = 2;
+}
+
+message ChatsResp {
+    repeated Chat Chats = 1;
+}
+
+message ChatResp{
+    Chat Chat = 1;
+}
+
 message SearchRequest{
     string Input_data = 1;
+    int64 Chat_id = 2;
+}
+
+message AuthorPaperReq{
+    int64 Author_ID = 1;
+    string State = 2;
 }
 
 message PaperResponse{
@@ -32,6 +117,7 @@ message AddRequest{
     string Best_oa_location = 5;
     repeated Referenced_works Referenced_works = 6;
     repeated Related_works Related_works = 7;
+    string State = 8;
 }
 
 message Referenced_works{
