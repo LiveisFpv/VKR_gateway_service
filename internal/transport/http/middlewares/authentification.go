@@ -2,8 +2,10 @@ package middlewares
 
 import (
 	"VKR_gateway_service/internal/app"
+	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,12 +16,12 @@ import (
 // It sends GET SSO_HTTP_URL + "/api/auth/validate" with the same Authorization header.
 // On non-200 it aborts request and returns JSON: {"error": "string"}.
 func AuthMiddleware(a *app.App) gin.HandlerFunc {
-    return func(c *gin.Context) {
-        // Avoid recursive validation if someone points SSO to this same service
-        if strings.HasSuffix(c.Request.URL.Path, "/api/auth/validate") {
-            c.Next()
-            return
-        }
+	return func(c *gin.Context) {
+		// Avoid recursive validation if someone points SSO to this same service
+		if strings.HasSuffix(c.Request.URL.Path, "/api/auth/validate") {
+			c.Next()
+			return
+		}
 		if c.Request.Method == "OPTIONS" {
 			c.Next()
 			return
@@ -70,6 +72,59 @@ func AuthMiddleware(a *app.App) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		if userID, ok := extractUserID(body); ok && userID > 0 {
+			c.Set("user_id", userID)
+		}
 		c.Next()
+	}
+}
+
+func extractUserID(body []byte) (int64, bool) {
+	if len(body) == 0 {
+		return 0, false
+	}
+	var payload map[string]interface{}
+	if err := json.Unmarshal(body, &payload); err != nil {
+		return 0, false
+	}
+	return findUserID(payload)
+}
+
+func findUserID(payload map[string]interface{}) (int64, bool) {
+	keys := []string{"user_id", "userId", "id", "uid", "sub"}
+	for _, key := range keys {
+		if v, ok := payload[key]; ok {
+			if id, ok := normalizeID(v); ok {
+				return id, true
+			}
+		}
+	}
+	if v, ok := payload["user"]; ok {
+		if nested, ok := v.(map[string]interface{}); ok {
+			return findUserID(nested)
+		}
+	}
+	return 0, false
+}
+
+func normalizeID(v interface{}) (int64, bool) {
+	switch t := v.(type) {
+	case float64:
+		return int64(t), true
+	case string:
+		id, err := strconv.ParseInt(t, 10, 64)
+		if err != nil {
+			return 0, false
+		}
+		return id, true
+	case json.Number:
+		id, err := t.Int64()
+		if err != nil {
+			return 0, false
+		}
+		return id, true
+	default:
+		return 0, false
 	}
 }

@@ -64,9 +64,9 @@
                 }
             }
         },
-        "/ai/search/papers": {
+        "/chats": {
             "get": {
-                "description": "Semantic search for papers",
+                "description": "Get all chats for a user",
                 "consumes": [
                     "application/json"
                 ],
@@ -74,16 +74,203 @@
                     "application/json"
                 ],
                 "tags": [
-                    "ai"
+                    "chat"
                 ],
-                "summary": "Search papers",
+                "summary": "Get user chats",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Search text",
-                        "name": "text",
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
                         "in": "query",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ChatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new chat for the user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chat"
+                ],
+                "summary": "Create chat",
+                "parameters": [
+                    {
+                        "description": "Chat data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/presenters.CreateChatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ChatResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/chats/{chat_id}/history": {
+            "get": {
+                "description": "Get chat history by chat ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chat"
+                ],
+                "summary": "Get chat history",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Chat ID",
+                        "name": "chat_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ChatHistoryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new chat history entry by chat ID and search text",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chat"
+                ],
+                "summary": "Add chat history entry",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Chat ID",
+                        "name": "chat_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Search query",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ChatHistoryCreateRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -101,6 +288,12 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/presenters.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/presenters.ErrorResponse"
                         }
@@ -144,6 +337,92 @@
                     "type": "string"
                 },
                 "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "presenters.Chat": {
+            "type": "object",
+            "properties": {
+                "chat_id": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "presenters.ChatHistoryCreateRequest": {
+            "type": "object",
+            "required": [
+                "text"
+            ],
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "presenters.ChatHistoryMessage": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "papers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/presenters.Paper"
+                    }
+                },
+                "search_query": {
+                    "type": "string"
+                }
+            }
+        },
+        "presenters.ChatHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "chat_messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/presenters.ChatHistoryMessage"
+                    }
+                }
+            }
+        },
+        "presenters.ChatResponse": {
+            "type": "object",
+            "properties": {
+                "chat": {
+                    "$ref": "#/definitions/presenters.Chat"
+                }
+            }
+        },
+        "presenters.ChatsResponse": {
+            "type": "object",
+            "properties": {
+                "chats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/presenters.Chat"
+                    }
+                }
+            }
+        },
+        "presenters.CreateChatRequest": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "user_id": {
                     "type": "integer"
                 }
             }

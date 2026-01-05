@@ -90,6 +90,10 @@ func NewHTTPServer(conf *config.Config, a *app.App) *Server {
 	ai := s.app.Group("/api/ai/")
 	ai.Use(middlewares.AuthMiddleware(a))
 	AIRouter(ai, a)
+
+	chat := s.app.Group("/api/chats/")
+	chat.Use(middlewares.AuthMiddleware(a))
+	ChatRouter(chat, a)
 	return &s
 }
 
