@@ -5,17 +5,18 @@ package semantic;
 option go_package = "github.com/Live/VKR_gateway_service/gen/go/semantic";
 
 service SemanticService{
-    rpc GetInstitutions (InstitutionReq) returns (InstitutionsResp);
-    rpc AddInstitution (Institution) returns (ErrorResponse);
-    rpc GetAuthors(AuthorReq) returns (AuthorsResp);
+    rpc GetInstitutions (InstitutionReq) returns (InstitutionsResp); // End
+    rpc AddInstitution (Institution) returns (ErrorResponse); // End
+    rpc GetAuthors(AuthorReq) returns (AuthorsResp); 
     rpc AddAuthor(Author) returns (ErrorResponse);
-    rpc GetChatHistory(HistoryReq) returns (HistoryResp);
-    rpc CreateNewChat(Chat) returns (ChatResp);
-    rpc UpdateChat(Chat) returns (ChatResp);
-    rpc GetUserChats(UserChatsReq) returns (ChatsResp);
+    rpc GetChatHistory(HistoryReq) returns (HistoryResp); // Done
+    rpc CreateNewChat(Chat) returns (ChatResp); // Done
+    rpc UpdateChat(Chat) returns (ChatResp); // Next
+    rpc DeleteChat(DeleteChatReq) returns (ErrorResponse); // Next
+    rpc GetUserChats(UserChatsReq) returns (ChatsResp); // Done
     rpc GetAuthorPapers (AuthorPaperReq) returns (PapersResponse);
-    rpc SearchPaper (SearchRequest) returns (PapersResponse);
-    rpc AddPaper (AddRequest) returns (ErrorResponse);
+    rpc SearchPaper (SearchRequest) returns (PapersResponse); // Done
+    rpc AddPaper (AddRequest) returns (ErrorResponse); 
 }
 
 message InstitutionReq {
@@ -66,6 +67,10 @@ message ChatMessage{
 
 message UserChatsReq {
     int64 User_id = 1;
+}
+
+message DeleteChatReq {
+    int64 Chat_id = 1;
 }
 
 message Chat {
