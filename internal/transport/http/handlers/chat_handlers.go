@@ -127,7 +127,7 @@ func CreateChat(ctx *gin.Context, a *app.App) {
 		ctx.JSON(http.StatusBadGateway, presenters.Error(fmt.Errorf("empty chat response")))
 		return
 	}
-	ctx.JSON(http.StatusOK, presenters.ChatResponse{Chat: mapChat(chat)})
+	ctx.JSON(http.StatusOK, mapChat(chat))
 }
 
 // GetUserChats
@@ -136,7 +136,7 @@ func CreateChat(ctx *gin.Context, a *app.App) {
 // @Tags chat
 // @Accept json
 // @Produce json
-// @Param user_id query int true "User ID"
+// @Param user_id query int false "User ID"
 // @Success 200 {object} presenters.ChatsResponse
 // @Failure 400 {object} presenters.ErrorResponse
 // @Failure 401 {object} presenters.ErrorResponse
@@ -171,7 +171,7 @@ func GetUserChats(ctx *gin.Context, a *app.App) {
 		return
 	}
 
-	out := presenters.ChatsResponse{Chats: make([]presenters.Chat, 0, len(resp.GetChats()))}
+	out := presenters.ChatsResponse{Chats: make([]presenters.ChatResponse, 0, len(resp.GetChats()))}
 	for _, chat := range resp.GetChats() {
 		out.Chats = append(out.Chats, mapChat(chat))
 	}
@@ -416,11 +416,11 @@ func authorizeChatAccess(ctx *gin.Context, a *app.App, userID, chatID int64) boo
 	return false
 }
 
-func mapChat(chat *pb.Chat) presenters.Chat {
+func mapChat(chat *pb.Chat) presenters.ChatResponse {
 	if chat == nil {
-		return presenters.Chat{}
+		return presenters.ChatResponse{}
 	}
-	return presenters.Chat{
+	return presenters.ChatResponse{
 		ChatId:    chat.GetChatId(),
 		UserId:    chat.GetUserId(),
 		UpdatedAt: chat.GetUpdatedAt(),

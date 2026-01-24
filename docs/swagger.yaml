@@ -21,17 +21,6 @@ definitions:
       year:
         type: integer
     type: object
-  presenters.Chat:
-    properties:
-      chat_id:
-        type: integer
-      title:
-        type: string
-      updated_at:
-        type: string
-      user_id:
-        type: integer
-    type: object
   presenters.ChatHistoryCreateRequest:
     properties:
       text:
@@ -59,14 +48,20 @@ definitions:
     type: object
   presenters.ChatResponse:
     properties:
-      chat:
-        $ref: '#/definitions/presenters.Chat'
+      chat_id:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
     type: object
   presenters.ChatsResponse:
     properties:
       chats:
         items:
-          $ref: '#/definitions/presenters.Chat'
+          $ref: '#/definitions/presenters.ChatResponse'
         type: array
     type: object
   presenters.CreateChatRequest:
@@ -163,7 +158,6 @@ paths:
       - description: User ID
         in: query
         name: user_id
-        required: true
         type: integer
       produces:
       - application/json

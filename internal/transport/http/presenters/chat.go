@@ -13,11 +13,14 @@ type Chat struct {
 }
 
 type ChatResponse struct {
-	Chat Chat `json:"chat"`
+	ChatId    int64  `json:"chat_id"`
+	UserId    int64  `json:"user_id"`
+	UpdatedAt string `json:"updated_at"`
+	Title     string `json:"title"`
 }
 
 type ChatsResponse struct {
-	Chats []Chat `json:"chats"`
+	Chats []ChatResponse `json:"chats"`
 }
 
 type ChatHistoryCreateRequest struct {

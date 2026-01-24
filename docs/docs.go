@@ -88,8 +88,7 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "User ID",
                         "name": "user_id",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -347,23 +346,6 @@ const docTemplate = `{
                 }
             }
         },
-        "presenters.Chat": {
-            "type": "object",
-            "properties": {
-                "chat_id": {
-                    "type": "integer"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
-                }
-            }
-        },
         "presenters.ChatHistoryCreateRequest": {
             "type": "object",
             "required": [
@@ -406,8 +388,17 @@ const docTemplate = `{
         "presenters.ChatResponse": {
             "type": "object",
             "properties": {
-                "chat": {
-                    "$ref": "#/definitions/presenters.Chat"
+                "chat_id": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -417,7 +408,7 @@ const docTemplate = `{
                 "chats": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/presenters.Chat"
+                        "$ref": "#/definitions/presenters.ChatResponse"
                     }
                 }
             }

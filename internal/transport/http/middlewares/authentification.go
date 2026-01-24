@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"VKR_gateway_service/internal/app"
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -72,8 +73,11 @@ func AuthMiddleware(a *app.App) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
-		if userID, ok := extractUserID(body); ok && userID > 0 {
+		userID, ok := extractUserIDFromHeader(resp.Header)
+		if !ok {
+			userID, ok = extractUserIDFromToken(tokenString)
+		}
+		if ok && userID > 0 {
 			c.Set("user_id", userID)
 		}
 		c.Next()
@@ -84,28 +88,68 @@ func extractUserID(body []byte) (int64, bool) {
 	if len(body) == 0 {
 		return 0, false
 	}
-	var payload map[string]interface{}
+	var payload interface{}
 	if err := json.Unmarshal(body, &payload); err != nil {
 		return 0, false
 	}
-	return findUserID(payload)
+	return findUserIDRecursive(payload)
 }
 
-func findUserID(payload map[string]interface{}) (int64, bool) {
-	keys := []string{"user_id", "userId", "id", "uid", "sub"}
-	for _, key := range keys {
-		if v, ok := payload[key]; ok {
-			if id, ok := normalizeID(v); ok {
+func findUserIDRecursive(payload interface{}) (int64, bool) {
+	switch v := payload.(type) {
+	case map[string]interface{}:
+		keys := []string{"user_id", "userId", "userID", "User_id", "UserId", "id", "uid", "sub"}
+		for _, key := range keys {
+			if raw, ok := v[key]; ok {
+				if id, ok := normalizeID(raw); ok {
+					return id, true
+				}
+			}
+		}
+		for _, raw := range v {
+			if id, ok := findUserIDRecursive(raw); ok {
+				return id, true
+			}
+		}
+	case []interface{}:
+		for _, raw := range v {
+			if id, ok := findUserIDRecursive(raw); ok {
 				return id, true
 			}
 		}
 	}
-	if v, ok := payload["user"]; ok {
-		if nested, ok := v.(map[string]interface{}); ok {
-			return findUserID(nested)
+	return 0, false
+}
+
+func extractUserIDFromHeader(header http.Header) (int64, bool) {
+	keys := []string{"X-User-Id", "X-UserId", "X-UserID"}
+	for _, key := range keys {
+		value := strings.TrimSpace(header.Get(key))
+		if value == "" {
+			continue
+		}
+		id, err := strconv.ParseInt(value, 10, 64)
+		if err == nil && id > 0 {
+			return id, true
 		}
 	}
 	return 0, false
+}
+
+func extractUserIDFromToken(tokenString string) (int64, bool) {
+	tokenString = strings.TrimSpace(tokenString)
+	if strings.HasPrefix(tokenString, "Bearer ") {
+		tokenString = strings.TrimSpace(strings.TrimPrefix(tokenString, "Bearer "))
+	}
+	parts := strings.Split(tokenString, ".")
+	if len(parts) < 2 {
+		return 0, false
+	}
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return 0, false
+	}
+	return extractUserID(payload)
 }
 
 func normalizeID(v interface{}) (int64, bool) {
