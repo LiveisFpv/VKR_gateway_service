@@ -8,7 +8,6 @@ package semantic
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -27,6 +26,7 @@ const (
 	SemanticService_GetChatHistory_FullMethodName  = "/semantic.SemanticService/GetChatHistory"
 	SemanticService_CreateNewChat_FullMethodName   = "/semantic.SemanticService/CreateNewChat"
 	SemanticService_UpdateChat_FullMethodName      = "/semantic.SemanticService/UpdateChat"
+	SemanticService_DeleteChat_FullMethodName      = "/semantic.SemanticService/DeleteChat"
 	SemanticService_GetUserChats_FullMethodName    = "/semantic.SemanticService/GetUserChats"
 	SemanticService_GetAuthorPapers_FullMethodName = "/semantic.SemanticService/GetAuthorPapers"
 	SemanticService_SearchPaper_FullMethodName     = "/semantic.SemanticService/SearchPaper"
@@ -44,6 +44,7 @@ type SemanticServiceClient interface {
 	GetChatHistory(ctx context.Context, in *HistoryReq, opts ...grpc.CallOption) (*HistoryResp, error)
 	CreateNewChat(ctx context.Context, in *Chat, opts ...grpc.CallOption) (*ChatResp, error)
 	UpdateChat(ctx context.Context, in *Chat, opts ...grpc.CallOption) (*ChatResp, error)
+	DeleteChat(ctx context.Context, in *DeleteChatReq, opts ...grpc.CallOption) (*ErrorResponse, error)
 	GetUserChats(ctx context.Context, in *UserChatsReq, opts ...grpc.CallOption) (*ChatsResp, error)
 	GetAuthorPapers(ctx context.Context, in *AuthorPaperReq, opts ...grpc.CallOption) (*PapersResponse, error)
 	SearchPaper(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*PapersResponse, error)
@@ -128,6 +129,16 @@ func (c *semanticServiceClient) UpdateChat(ctx context.Context, in *Chat, opts .
 	return out, nil
 }
 
+func (c *semanticServiceClient) DeleteChat(ctx context.Context, in *DeleteChatReq, opts ...grpc.CallOption) (*ErrorResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ErrorResponse)
+	err := c.cc.Invoke(ctx, SemanticService_DeleteChat_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *semanticServiceClient) GetUserChats(ctx context.Context, in *UserChatsReq, opts ...grpc.CallOption) (*ChatsResp, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ChatsResp)
@@ -179,6 +190,7 @@ type SemanticServiceServer interface {
 	GetChatHistory(context.Context, *HistoryReq) (*HistoryResp, error)
 	CreateNewChat(context.Context, *Chat) (*ChatResp, error)
 	UpdateChat(context.Context, *Chat) (*ChatResp, error)
+	DeleteChat(context.Context, *DeleteChatReq) (*ErrorResponse, error)
 	GetUserChats(context.Context, *UserChatsReq) (*ChatsResp, error)
 	GetAuthorPapers(context.Context, *AuthorPaperReq) (*PapersResponse, error)
 	SearchPaper(context.Context, *SearchRequest) (*PapersResponse, error)
@@ -213,6 +225,9 @@ func (UnimplementedSemanticServiceServer) CreateNewChat(context.Context, *Chat) 
 }
 func (UnimplementedSemanticServiceServer) UpdateChat(context.Context, *Chat) (*ChatResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateChat not implemented")
+}
+func (UnimplementedSemanticServiceServer) DeleteChat(context.Context, *DeleteChatReq) (*ErrorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteChat not implemented")
 }
 func (UnimplementedSemanticServiceServer) GetUserChats(context.Context, *UserChatsReq) (*ChatsResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserChats not implemented")
@@ -373,6 +388,24 @@ func _SemanticService_UpdateChat_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SemanticService_DeleteChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteChatReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SemanticServiceServer).DeleteChat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SemanticService_DeleteChat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SemanticServiceServer).DeleteChat(ctx, req.(*DeleteChatReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _SemanticService_GetUserChats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UserChatsReq)
 	if err := dec(in); err != nil {
@@ -479,6 +512,10 @@ var SemanticService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateChat",
 			Handler:    _SemanticService_UpdateChat_Handler,
+		},
+		{
+			MethodName: "DeleteChat",
+			Handler:    _SemanticService_DeleteChat_Handler,
 		},
 		{
 			MethodName: "GetUserChats",
