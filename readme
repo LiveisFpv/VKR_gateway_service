@@ -1,6 +1,6 @@
 # ALib Gateway Service
 
-HTTP gateway for the VKR semantic search stack. Exposes a REST API for chat and
+HTTP gateway for the ALib semantic search stack. Exposes a REST API for chat and
 paper indexing, validates JWT tokens via an external SSO service, and proxies
 requests to an AL semantic service.
 
