@@ -1,7 +1,82 @@
-Generate by proto:
+# ALib Gateway Service
+
+HTTP gateway for the VKR semantic search stack. Exposes a REST API for chat and
+paper indexing, validates JWT tokens via an external SSO service, and proxies
+requests to an AL semantic service.
+
+## Architecture
+
+- HTTP server (Gin) on `HTTP_PORT`, base path `/api`
+- gRPC client to AI service at `AI_GRPC_ADDR`
+- JWT validation by SSO: `SSO_HTTP_URL/api/auth/validate`
+- Swagger UI at `/swagger` (optional basic auth)
+
+## Quick start (Docker)
+
+1) Copy env file: `cp .env.example .env` (PowerShell: `copy .env.example .env`)
+2) Create external network once: `docker network create grpc_network`
+3) Start: `docker compose --env-file .env up --build`
+
+The compose stack starts:
+
+- `core` service (this app) with hot reload via `air`
+- `postgres` and `migrator`
+
+If the AI service runs in Docker, attach it to `grpc_network` and set
+`AI_GRPC_ADDR` to its service name and port.
+
+## Local development
+
+- Install Go 1.23+ and `protoc` (for gRPC code generation).
+- Start Postgres and the AI gRPC service.
+- Run: `go run ./cmd` or `air -c .air.toml`.
+
+## API
+
+Base path: `/api`.
+
+Protected endpoints (require `Authorization: Bearer <token>`):
+
+- `POST /api/ai/paper/add`
+- `POST /api/chats`
+- `GET /api/chats`
+- `GET /api/chats/{chat_id}/history`
+- `POST /api/chats/{chat_id}/history`
+- `PUT /api/chats/{chat_id}`
+- `DELETE /api/chats/{chat_id}`
+
+Swagger: `http://localhost:8080/swagger/index.html` (if enabled).
+
+## Environment variables
+
+Required:
+
+- `ALLOWED_CORS_ORIGINS` (comma-separated; service exits if empty)
+- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+
+Optional:
+
+- `DOMAIN`, `PUBLIC_URL`, `ALLOWED_REDIRECT_URLS`
+- `AI_GRPC_ADDR` (default `localhost:5104`), `GRPC_TIMEOUT`
+- `SSO_HTTP_URL` (required for protected endpoints to succeed)
+- `HTTP_PORT`
+- `SWAGGER_ENABLED`, `SWAGGER_USER`, `SWAGGER_PASSWORD`
+- `DB_SSL` (defaults to `disable`)
+
+## Migrations
+
+Migrations run automatically in Docker Compose via `tools/migrator`.
+For manual runs:
+
 ```
-protoc -I proto `
-  --go_out=gen/go --go_opt=paths=source_relative `
-  --go-grpc_out=gen/go --go-grpc_opt=paths=source_relative `
+go run tools/migrator/main.go --user=... --password=... --host=... --port=... --dbname=... --migrations-path=./db/migrations
+```
+
+## Generate gRPC stubs
+
+```
+protoc -I proto \
+  --go_out=gen/go --go_opt=paths=source_relative \
+  --go-grpc_out=gen/go --go-grpc_opt=paths=source_relative \
   proto/service.proto
 ```
