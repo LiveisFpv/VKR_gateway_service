@@ -11,8 +11,8 @@ service SemanticService{
     rpc AddAuthor(Author) returns (ErrorResponse);
     rpc GetChatHistory(HistoryReq) returns (HistoryResp); // Done
     rpc CreateNewChat(Chat) returns (ChatResp); // Done
-    rpc UpdateChat(Chat) returns (ChatResp); // Next
-    rpc DeleteChat(DeleteChatReq) returns (ErrorResponse); // Next
+    rpc UpdateChat(UpdateChatReq) returns (ChatResp); // Done
+    rpc DeleteChat(DeleteChatReq) returns (ErrorResponse); // Done
     rpc GetUserChats(UserChatsReq) returns (ChatsResp); // Done
     rpc GetAuthorPapers (AuthorPaperReq) returns (PapersResponse);
     rpc SearchPaper (SearchRequest) returns (PapersResponse); // Done
@@ -71,6 +71,7 @@ message UserChatsReq {
 
 message DeleteChatReq {
     int64 Chat_id = 1;
+    int64 User_id = 2;
 }
 
 message Chat {
@@ -83,6 +84,7 @@ message Chat {
 message UpdateChatReq {
     int64 Chat_id = 1;
     string Title = 2;
+    int64 User_id = 3;
 }
 
 message ChatsResp {

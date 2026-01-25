@@ -291,7 +291,7 @@ func CreateChatHistory(ctx *gin.Context, a *app.App) {
 			a.Logger.WithError(err).WithFields(map[string]interface{}{
 				"chat_id": chatID,
 				"user_id": userID,
-			}).Error("AI SearchPaper RPC failed")
+			}).Error("AI Update chat RPC failed")
 		}
 		if s, ok := status.FromError(err); ok {
 			ctx.JSON(mapGRPCToHTTP(s.Code()), presenters.Error(fmt.Errorf(s.Message())))
@@ -303,6 +303,127 @@ func CreateChatHistory(ctx *gin.Context, a *app.App) {
 
 	out := presenters.SearchPaperResponse{Papers: mapPapers(resp.GetPapers())}
 	ctx.JSON(http.StatusOK, out)
+}
+
+// UpdateChat
+// @Summary Update chat title
+// @Description Update chat title by owner (user)
+// @Tags chat
+// @Accept json
+// @Produce json
+// @Param chat_id path int true "Chat ID"
+// @Param data body presenters.CreateChatRequest true "Chat data"
+// @Success 200 {object} presenters.ChatResponse
+// @Failure 400 {object} presenters.ErrorResponse
+// @Failure 401 {object} presenters.ErrorResponse
+// @Failure 403 {object} presenters.ErrorResponse
+// @Failure 500 {object} presenters.ErrorResponse
+// @Router /chats/{chat_id} [put]
+func UpdateChat(ctx *gin.Context, a *app.App) {
+	chatID, err := parsePathInt64(ctx, "chat_id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, presenters.Error(err))
+		return
+	}
+	userID, err := parseOptionalQueryInt64(ctx, "user_id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, presenters.Error(err))
+		return
+	}
+	userID, statusCode, err := resolveUserID(ctx, userID)
+	if err != nil {
+		ctx.JSON(statusCode, presenters.Error(err))
+		return
+	}
+	if !authorizeChatAccess(ctx, a, userID, chatID) {
+		return
+	}
+	var in presenters.CreateChatRequest
+	if err := ctx.ShouldBindJSON(&in); err != nil {
+		ctx.JSON(http.StatusBadRequest, presenters.Error(err))
+		return
+	}
+	req := &pb.UpdateChatReq{
+		ChatId: chatID,
+		UserId: userID,
+		Title:  in.Title,
+	}
+	rctx, cancel := requestContext(ctx, a)
+	defer cancel()
+	resp, err := a.AI.UpdateChat(rctx, req)
+	if err != nil {
+		a.Logger.WithError(err).WithFields(map[string]interface{}{
+			"chat_id": chatID,
+			"user_id": userID,
+		}).Error("Update Chat RPC failed")
+		if s, ok := status.FromError(err); ok {
+			ctx.JSON(mapGRPCToHTTP(s.Code()), presenters.Error(fmt.Errorf(s.Message())))
+			return
+		}
+		ctx.JSON(http.StatusBadGateway, presenters.Error(err))
+		return
+	}
+	chat := resp.GetChat()
+	if chat == nil {
+		ctx.JSON(http.StatusBadGateway, presenters.Error(fmt.Errorf("empty chat response")))
+		return
+	}
+	ctx.JSON(http.StatusOK, mapChat(chat))
+}
+
+// DeleteChat
+// @Summary Delete chat
+// @Description Delete chat by owner
+// @Tags chat
+// @Accept json
+// @Produce json
+// @Param chat_id path int true "Chat ID"
+// @Success 200
+// @Failure 400 {object} presenters.ErrorResponse
+// @Failure 401 {object} presenters.ErrorResponse
+// @Failure 500 {object} presenters.ErrorResponse
+// @Router /chats/{chat_id} [delete]
+func DeleteChat(ctx *gin.Context, a *app.App) {
+	chatID, err := parsePathInt64(ctx, "chat_id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, presenters.Error(err))
+		return
+	}
+	userID, err := parseOptionalQueryInt64(ctx, "user_id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, presenters.Error(err))
+		return
+	}
+	userID, statusCode, err := resolveUserID(ctx, userID)
+	if err != nil {
+		ctx.JSON(statusCode, presenters.Error(err))
+		return
+	}
+	if !authorizeChatAccess(ctx, a, userID, chatID) {
+		return
+	}
+	req := &pb.DeleteChatReq{ChatId: chatID, UserId: userID}
+	rctx, cancel := requestContext(ctx, a)
+	defer cancel()
+	resp, err := a.AI.DeleteChat(rctx, req)
+	if err != nil {
+		if a.Logger != nil {
+			a.Logger.WithError(err).WithFields(map[string]interface{}{
+				"chat_id": chatID,
+				"user_id": userID,
+			}).Error("AI Update chat RPC failed")
+		}
+		if s, ok := status.FromError(err); ok {
+			ctx.JSON(mapGRPCToHTTP(s.Code()), presenters.Error(fmt.Errorf(s.Message())))
+			return
+		}
+		ctx.JSON(http.StatusBadGateway, presenters.Error(err))
+		return
+	}
+	if resp.Error != "" {
+		ctx.JSON(http.StatusBadRequest, presenters.Error(fmt.Errorf(resp.Error)))
+	}
+	ctx.Status(http.StatusOK)
 }
 
 func mapGRPCToHTTP(c codes.Code) int {

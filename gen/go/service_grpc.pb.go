@@ -43,7 +43,7 @@ type SemanticServiceClient interface {
 	AddAuthor(ctx context.Context, in *Author, opts ...grpc.CallOption) (*ErrorResponse, error)
 	GetChatHistory(ctx context.Context, in *HistoryReq, opts ...grpc.CallOption) (*HistoryResp, error)
 	CreateNewChat(ctx context.Context, in *Chat, opts ...grpc.CallOption) (*ChatResp, error)
-	UpdateChat(ctx context.Context, in *Chat, opts ...grpc.CallOption) (*ChatResp, error)
+	UpdateChat(ctx context.Context, in *UpdateChatReq, opts ...grpc.CallOption) (*ChatResp, error)
 	DeleteChat(ctx context.Context, in *DeleteChatReq, opts ...grpc.CallOption) (*ErrorResponse, error)
 	GetUserChats(ctx context.Context, in *UserChatsReq, opts ...grpc.CallOption) (*ChatsResp, error)
 	GetAuthorPapers(ctx context.Context, in *AuthorPaperReq, opts ...grpc.CallOption) (*PapersResponse, error)
@@ -119,7 +119,7 @@ func (c *semanticServiceClient) CreateNewChat(ctx context.Context, in *Chat, opt
 	return out, nil
 }
 
-func (c *semanticServiceClient) UpdateChat(ctx context.Context, in *Chat, opts ...grpc.CallOption) (*ChatResp, error) {
+func (c *semanticServiceClient) UpdateChat(ctx context.Context, in *UpdateChatReq, opts ...grpc.CallOption) (*ChatResp, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ChatResp)
 	err := c.cc.Invoke(ctx, SemanticService_UpdateChat_FullMethodName, in, out, cOpts...)
@@ -189,7 +189,7 @@ type SemanticServiceServer interface {
 	AddAuthor(context.Context, *Author) (*ErrorResponse, error)
 	GetChatHistory(context.Context, *HistoryReq) (*HistoryResp, error)
 	CreateNewChat(context.Context, *Chat) (*ChatResp, error)
-	UpdateChat(context.Context, *Chat) (*ChatResp, error)
+	UpdateChat(context.Context, *UpdateChatReq) (*ChatResp, error)
 	DeleteChat(context.Context, *DeleteChatReq) (*ErrorResponse, error)
 	GetUserChats(context.Context, *UserChatsReq) (*ChatsResp, error)
 	GetAuthorPapers(context.Context, *AuthorPaperReq) (*PapersResponse, error)
@@ -223,7 +223,7 @@ func (UnimplementedSemanticServiceServer) GetChatHistory(context.Context, *Histo
 func (UnimplementedSemanticServiceServer) CreateNewChat(context.Context, *Chat) (*ChatResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNewChat not implemented")
 }
-func (UnimplementedSemanticServiceServer) UpdateChat(context.Context, *Chat) (*ChatResp, error) {
+func (UnimplementedSemanticServiceServer) UpdateChat(context.Context, *UpdateChatReq) (*ChatResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateChat not implemented")
 }
 func (UnimplementedSemanticServiceServer) DeleteChat(context.Context, *DeleteChatReq) (*ErrorResponse, error) {
@@ -371,7 +371,7 @@ func _SemanticService_CreateNewChat_Handler(srv interface{}, ctx context.Context
 }
 
 func _SemanticService_UpdateChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Chat)
+	in := new(UpdateChatReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -383,7 +383,7 @@ func _SemanticService_UpdateChat_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: SemanticService_UpdateChat_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SemanticServiceServer).UpdateChat(ctx, req.(*Chat))
+		return srv.(SemanticServiceServer).UpdateChat(ctx, req.(*UpdateChatReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }

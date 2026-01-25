@@ -17,6 +17,8 @@ func ChatRouter(r *gin.RouterGroup, a *app.App) {
 	r.GET("", func(ctx *gin.Context) { handlers.GetUserChats(ctx, a) })
 	r.GET("/:chat_id/history", func(ctx *gin.Context) { handlers.GetChatHistory(ctx, a) })
 	r.POST("/:chat_id/history", func(ctx *gin.Context) { handlers.CreateChatHistory(ctx, a) })
+	r.PUT("/:chat_id", func(ctx *gin.Context) { handlers.UpdateChat(ctx, a) })
+	r.DELETE("/:chat_id", func(ctx *gin.Context) { handlers.DeleteChat(ctx, a) })
 }
 
 func SSORouter(r *gin.RouterGroup, a *app.App) {
